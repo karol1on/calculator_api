@@ -1,10 +1,19 @@
 class Calculator
-  OPERATORS = {
+  BINARY_OPERATORS = {
     '+' => { precedence: 1, associativity: :left, func: ->(a, b) { a + b } },
     '-' => { precedence: 1, associativity: :left, func: ->(a, b) { a - b } },
     '*' => { precedence: 2, associativity: :left, func: ->(a, b) { a * b } },
     '/' => { precedence: 2, associativity: :left, func: ->(a, b) { a / b } },
     '^' => { precedence: 3, associativity: :right, func: ->(a, b) { a**b } }
+  }
+
+  UNARY_OPERATORS = {
+    'sqrt' => { func: ->(a) { Math.sqrt(a) } },
+    'sin' => { func: ->(a) { Math.sin(a) } },
+    'cos' => { func: ->(a) { Math.cos(a) } },
+    'tan' => { func: ->(a) { Math.tan(a) } },
+    'log' => { func: ->(a) { Math.log(a) } },
+    'abs' => { func: ->(a) { a.abs } }
   }
 
   attr_reader :expression
@@ -42,11 +51,11 @@ class Calculator
           num, i = parse_number_from_position(i, '-')
           tokens << { type: :number, value: num }
         else
-          tokens << { type: :operator, value: char }
+          tokens << { type: :binary_operator, value: char }
           i += 1
         end
       when '+', '*', '/', '^'
-        tokens << { type: :operator, value: char }
+        tokens << { type: :binary_operator, value: char }
         i += 1
       when '('
         tokens << { type: :left_paren, value: char }
@@ -77,6 +86,16 @@ class Calculator
     [num.to_f, i]
   end
 
+  def parse_func_name_from_position(i)
+    func_name = ''
+    while i < expression.length && (expression[i].between?('a', 'z') || expression[i].between?('A', 'Z'))
+      func_name += expression[i]
+      i += 1
+    end
+
+    [func_name, i]
+  end
+
   def should_treat_as_negative_number?(tokens)
     return true if tokens.empty?
 
@@ -91,8 +110,8 @@ class Calculator
       case token[:type]
       when :number
         queue << token
-      when :operator
-        queue << operator_stack.pop while should_pop_operator?(operator_stack, token)
+      when :binary_operator
+        queue << operator_stack.pop while should_pop_binary_operator?(operator_stack, token)
         operator_stack << token
       when :unary_operator
         operator_stack << token
@@ -114,13 +133,16 @@ class Calculator
     queue
   end
 
-  def should_pop_operator?(operator_stack, current_token)
+  def should_pop_binary_operator?(operator_stack, current_token)
     return false if operator_stack.empty?
-    return false if operator_stack.last[:type] != :operator
 
-    stack_precedence = OPERATORS[operator_stack.last[:value]][:precedence]
-    current_precedence = OPERATORS[current_token[:value]][:precedence]
-    current_associativity = OPERATORS[current_token[:value]][:associativity]
+    stack_token = operator_stack.last
+    return true if stack_token[:type] == :unary_operator
+    return false if stack_token[:type] == :left_paren
+
+    stack_precedence = BINARY_OPERATORS[stack_token[:value]][:precedence]
+    current_precedence = BINARY_OPERATORS[current_token[:value]][:precedence]
+    current_associativity = BINARY_OPERATORS[current_token[:value]][:associativity]
 
     if current_associativity == :right
       stack_precedence > current_precedence
@@ -136,13 +158,18 @@ class Calculator
       case token[:type]
       when :number
         stack << token[:value]
-      when :operator
+      when :binary_operator
         raise 'Invalid expression: not enough operands' if stack.length < 2
 
         b = stack.pop
         a = stack.pop
+        result = BINARY_OPERATORS[token[:value]][:func].call(a, b)
+        stack << result
+      when :unary_operator
+        raise 'Invalid expression: not enough operands' if stack.length == 0
 
-        result = OPERATORS[token[:value]][:func].call(a, b)
+        a = stack.pop
+        result = UNARY_OPERATORS[token[:value]][:func].call(a)
         stack << result
       end
     end

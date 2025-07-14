@@ -1,7 +1,7 @@
 require 'sinatra'
 require './calculator'
 
-ALLOWED_EXPR = %r{^[0-9.+\-*/()\s]+$}
+ALLOWED_EXPR = %r{^[0-9.+\-*/()\s\^]+$}
 
 get '/calculator' do
   content_type :json

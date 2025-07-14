@@ -4,12 +4,13 @@ A simple REST API for evaluating mathematical expressions, built with Ruby and S
 
 ## Features
 
-- **Safe Expression Evaluation**: Uses the Shunting Yard algorithm to safely parse and evaluate mathematical expressions
-- **Security**: Only allows basic mathematical operations and numbers - no code injection risks
-- **Support for Operations**: Addition (`+`), subtraction (`-`), multiplication (`*`), division (`/`)
+- **Safe Expression Evaluation**: This API uses the Shunting Yard algorithm to safely parse and evaluate complex mathematical expressions with proper operator precedence.
+- **Security**: Allows basic mathematical operations and functions - no code injection risks
+- **Binary Operations**: Addition (`+`), subtraction (`-`), multiplication (`*`), division (`/`), exponentiation (`^`)
+- **Unary Functions**: Square root (`sqrt`), trigonometric functions (`sin`, `cos`, `tan`), natural logarithm (`log`), absolute value (`abs`)
 - **Parentheses Support**: Properly handles nested parentheses with correct operator precedence
 - **JSON Response**: Returns results in JSON format
-- **Error Handling**: Comprehensive error handling for invalid expressions
+- **Comprehensive Error Handling**: Detailed error messages for invalid expressions and mathematical errors
 
 ## Installation
 
@@ -48,11 +49,26 @@ curl -X GET 'http://127.0.0.1:4567/calculator?expression=2%2B3*4'
 # Complex expression with parentheses
 curl -X GET 'http://127.0.0.1:4567/calculator?expression=2137/(2.5%2B3-8)*9'
 
-# Decimal numbers
-curl -X GET 'http://127.0.0.1:4567/calculator?expression=15.5*2.2'
+# Exponentiation
+curl -X GET 'http://127.0.0.1:4567/calculator?expression=2^3^2'
 
-# Nested parentheses
-curl -X GET 'http://127.0.0.1:4567/calculator?expression=(10%2B5)*(8-3)/2'
+# Square root
+curl -X GET 'http://127.0.0.1:4567/calculator?expression=sqrt(16)'
+
+# Trigonometric functions
+curl -X GET 'http://127.0.0.1:4567/calculator?expression=sin(0)'
+
+# Absolute value
+curl -X GET 'http://127.0.0.1:4567/calculator?expression=abs(-5)'
+
+# Natural logarithm
+curl -X GET 'http://127.0.0.1:4567/calculator?expression=log(1)'
+
+# Combined operations
+curl -X GET 'http://127.0.0.1:4567/calculator?expression=sqrt(16)%2B2*3'
+
+# Negative numbers
+curl -X GET 'http://127.0.0.1:4567/calculator?expression=(-2)^3'
 ```
 
 **Note:** In URL query parameters, the `+` character needs to be URL-encoded as `%2B`.
